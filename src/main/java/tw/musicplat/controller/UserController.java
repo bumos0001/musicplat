@@ -3,7 +3,9 @@ package tw.musicplat.controller;
 
 import org.springframework.web.bind.annotation.*;
 import tw.musicplat.Service.UserService;
+import tw.musicplat.model.dto.UserDTO;
 import tw.musicplat.model.entity.User;
+import tw.musicplat.tools.Result;
 
 import java.util.List;
 
@@ -17,21 +19,34 @@ public class UserController {
     }
 
     @GetMapping("/user/{id}")
-    public String getUser(@PathVariable int id) {
-        User userByID = userService.getUserByID(id);
-        return userByID.toString();
+    public Result getUser(@PathVariable int id) {
+        UserDTO userByID = userService.getUserByID(id);
+        if (userByID != null) {
+            return Result.buildResult(200, "get user success",userByID);
+        }else{
+            return Result.buildResult(400, "get user failed",null);
+        }
     }
 
     @GetMapping("/user")
-    public String getAll() {
-        List<User> allUser = userService.getAllUser();
-        return allUser.toString();
+    public Result getAll() {
+        List<UserDTO> allUser = userService.getAllUser();
+        if (!allUser.isEmpty()) {
+            return Result.buildResult(200, "get userList success", allUser);
+        }else{
+            return Result.buildResult(400, "get userList fail", null);
+
+        }
     }
 
     @PostMapping("/user/add")
-    public String addUser(@RequestBody User user) {
+    public Result addUser(@RequestBody User user) {
         // 不能使用默認hibernate save方法
-        userService.addUser(user);
-        return user.toString();
+        boolean b = userService.addUser(user);
+        if (b){
+            return Result.buildResult(200, "add user success",user);
+        }else{
+            return Result.buildResult(400, "add user failed",null);
+        }
     }
 }

@@ -12,6 +12,9 @@ import tw.musicplat.Service.LoginService;
 import tw.musicplat.model.dto.LoginDTO;
 import tw.musicplat.tools.Result;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping
 public class LoginController {
@@ -20,10 +23,9 @@ public class LoginController {
 
     @PostMapping("login")
     public Result login(@RequestBody LoginDTO loginDTO) {
-        String token = loginService.login(loginDTO);
-        if (token != null) {
-            System.out.println(token);
-            return Result.buildResult(200, "login success", token);
+        Map login = loginService.login(loginDTO);
+        if (login.get("token") != null) {
+            return Result.buildResult(200, "login success", login);
         } else {
             return Result.buildResult(400, "login fail", null);
         }

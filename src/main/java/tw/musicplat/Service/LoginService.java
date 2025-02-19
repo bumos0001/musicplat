@@ -7,9 +7,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import tw.musicplat.config.DBUserDetailsManager;
+import tw.musicplat.config.MyUserDetail;
 import tw.musicplat.model.dto.LoginDTO;
+import tw.musicplat.model.dto.UserDTO;
+import tw.musicplat.tools.DTOConvertUtil;
 import tw.musicplat.tools.JwtUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -21,12 +25,16 @@ public class LoginService {
     @Resource
     DBUserDetailsManager dbUserDetailsService;
 
-    public String login(LoginDTO loginDTO) {
+    public Map login(LoginDTO loginDTO) {
         String username = loginDTO.getUsername();
         String password = loginDTO.getPassword();
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(username, password);
         authentication = authenticationManager.authenticate(authentication);
-        return JwtUtil.generateToken(authentication);
+        UserDTO userDTO = DTOConvertUtil.toUserDTO((MyUserDetail) authentication.getPrincipal());
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("token",JwtUtil.generateToken(authentication));
+        map.put("userInfo",userDTO);
+        return map;
     }
 }
