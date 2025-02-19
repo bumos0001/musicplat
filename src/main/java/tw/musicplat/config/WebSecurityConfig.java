@@ -1,14 +1,20 @@
 package tw.musicplat.config;
 
 
+import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -18,6 +24,12 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity  // 開啟Security自定義配置(在SpringBoot項目中，可省略)
 public class WebSecurityConfig {
+    @Resource
+    private DBUserDetailsManager myUserDetailsService;
+
+    @Resource
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     // 加密
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -39,25 +51,15 @@ public class WebSecurityConfig {
                         //以認證請求自動授權
                         .authenticated()
                 )
-                // 登入配置
-                .formLogin(form -> {
-                            form.loginPage("/login").permitAll()
-                            .successHandler(new MyAuthenticationSuccessHandler()) // 認證成功時的處理
-                            .failureHandler(new MyAuthenticationFailureHandler()); // 認證失敗的處理
-                        }
-                )
-                // 登出配置
-                .logout(logout -> {
-                    logout.logoutSuccessHandler(new MyLogoutSuccessHandler()); // 登出成功時的處理
-                })
-                // 錯誤處理
-                .exceptionHandling(exception -> {
-                    exception.authenticationEntryPoint(new MyAuthenticationEntryPoint()); //請求未驗證的處理
-                    exception.accessDeniedHandler(new MyAccessDeniedHandler());
-                })
-                //
+                // JWT過濾器 (jwt過濾器在前)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .authenticationManager(authenticationManager())
+
                 .sessionManagement(sessionManagement -> {
-                    sessionManagement.maximumSessions(1).expiredSessionStrategy(new MySessionInformationExpiredStrategy());
+                    sessionManagement
+                            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                            .maximumSessions(1)
+                            .expiredSessionStrategy(new MySessionInformationExpiredStrategy());
                 })
 
                 // 支持跨域訪問
@@ -79,4 +81,22 @@ public class WebSecurityConfig {
 
         return source;
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(daoAuthenticationProvider());
+        // 若有多個驗證方式，可使用：
+        // List.of(daoAuthenticationProvider(), customAuthenticationProvider())
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider
+                = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(myUserDetailsService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
+
+
 }

@@ -1,16 +1,16 @@
 package tw.musicplat.tools;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import tw.musicplat.config.MyUserDetail;
 
 import java.util.*;
 
 public class JwtUtil {
-    @Value("${jwtToken.secret}")
-    private static String SECRET;
+    private static final String SECRET = "gry5h61ty5156ty1hnte1n1tyn56heh515615hjgo";
     private static final int EXPIRE_TIME = 60 * 60 ;
 
     // 產生token
@@ -31,4 +31,24 @@ public class JwtUtil {
                 .signWith(Keys.hmacShaKeyFor(SECRET.getBytes())) // 密鑰簽名
                 .compact(); // 產生出JWT token
     }
+
+    // 解析Token，返回claim
+    public static Claims getClaims(String token){
+        JwtParser parser = Jwts.parser().verifyWith(Keys.hmacShaKeyFor(SECRET.getBytes())).build();
+        return parser.parseSignedClaims(token).getPayload();
+    }
+
+    public static String getSubject(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public static String getValue(String token, String key) {
+        return (String) getClaims(token).get(key);
+    }
+
+    public static Boolean isTokenValid(String token) {
+        getSubject(token); // 若 token 有任何異常，則由 jjwt 套件直接拋出錯誤。
+        return true; // 能走到回傳表示驗證通過，token 合法
+    }
+
 }
