@@ -50,7 +50,7 @@ public class WebSecurityConfig {
 //                        .requestMatchers("/api/user/**").hasAnyAuthority("USER", "MANAGER", "ADMIN") // 包括 MANAGER 和 ADMIN
 //                        .requestMatchers("/**").permitAll()
                         // 除了以上的所有請求
-                        .requestMatchers("/login", "/api/register/**").permitAll()  // 公開接口
+                        .requestMatchers("/login", "/api/register/**","/img/**").permitAll()  // 公開接口
 
                         .anyRequest()
                         //以認證請求自動授權
