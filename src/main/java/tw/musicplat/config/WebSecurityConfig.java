@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity
 @EnableWebSecurity  // 開啟Security自定義配置(在SpringBoot項目中，可省略)
 public class WebSecurityConfig {
     @Resource
@@ -42,11 +44,14 @@ public class WebSecurityConfig {
         http
                 // 授權配置
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/manager/**").hasAnyAuthority("MANAGER", "ADMIN") // 包括 ADMIN
-                        .requestMatchers("/api/user/**").hasAnyAuthority("USER", "MANAGER", "ADMIN") // 包括 MANAGER 和 ADMIN
-                        .requestMatchers("/**").permitAll()
+                        //使用方法授權
+//                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+//                        .requestMatchers("/api/manager/**").hasAnyAuthority("MANAGER", "ADMIN") // 包括 ADMIN
+//                        .requestMatchers("/api/user/**").hasAnyAuthority("USER", "MANAGER", "ADMIN") // 包括 MANAGER 和 ADMIN
+//                        .requestMatchers("/**").permitAll()
                         // 除了以上的所有請求
+                        .requestMatchers("/login", "/api/register/**").permitAll()  // 公開接口
+
                         .anyRequest()
                         //以認證請求自動授權
                         .authenticated()

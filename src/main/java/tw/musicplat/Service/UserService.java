@@ -61,4 +61,23 @@ public class UserService {
             return false;
         }
     }
+
+    /**
+     * 傳入username，透過username查詢user
+     * @param username
+     * @return
+     */
+    public UserDTO getUserByUsername(String username){
+        User userByUsername = userRepository.getUserByUsername(username);
+        if (userByUsername == null) return null;
+        else{
+            return DTOConvertUtil.toUserDTO(userByUsername);
+        }
+    }
+
+    public UserDTO getUserByEmail(String email){
+        User userByEmail = userRepository.getUserByEmail(email);
+        if (userByEmail == null) return null;
+        return DTOConvertUtil.toUserDTO(userByEmail);
+    }
 }

@@ -9,4 +9,6 @@ import tw.musicplat.model.entity.User;
 public interface UserRepository extends JpaRepository<User, Long> {
     User getUserById(int id);
     User getUserByUsername(String username);
+
+    User getUserByEmail(String email);
 }
