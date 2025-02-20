@@ -81,7 +81,7 @@ public class UserService {
     /**
      * 傳入條件查詢的參數進行USER查詢
      */
-    public Page<UserDTO> findUser(String username, String email,String address, String phone, int page, int size,String sortField, String sortDirection) {
+    public Page<UserDTO> findUser(String username, String email,String address, String phone, Boolean enabled, int page, int size,String sortField, String sortDirection) {
         // 處理排序
         Sort sort = Sort.by(Sort.Order.by(sortField));
         if ("DESC".equalsIgnoreCase(sortDirection)) {
@@ -92,8 +92,7 @@ public class UserService {
         // 處理分頁
         Pageable pageable = PageRequest.of(page, size, sort);
         // 撈取資料
-        Page<UserDTO> usersByUsernameAndEmail = userRepository.findUsers(username, email, address, phone, pageable);
-        System.out.println(usersByUsernameAndEmail.getContent());
+        Page<UserDTO> usersByUsernameAndEmail = userRepository.findUsers(username, email, address, phone, enabled, pageable);
         return usersByUsernameAndEmail;
     }
 
@@ -140,6 +139,34 @@ public class UserService {
             return true;
 
         } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * user啟用
+     * @param userId userid
+     * @return 成功 = true , 失敗 = false
+     */
+    public boolean enableUser(Long userId) {
+        try{
+            userRepository.enableUser(userId);
+            return true;
+        }catch (Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * user禁用
+     * @param userId userid
+     * @return 成功 = true , 失敗 = false
+     */
+    public boolean disableUser(Long userId) {
+        try{
+            userRepository.disableUser(userId);
+            return true;
+        }catch (Exception e){
             throw new RuntimeException(e);
         }
     }
